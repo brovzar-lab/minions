@@ -120,7 +120,8 @@ const server = http.createServer((req, res) => {
   // Key refresh: Paperclip agent POSTs { key } here via Docker bridge (internal only)
   if (url.pathname === '/internal/refresh-key' && req.method === 'POST') {
     const remote = req.socket.remoteAddress ?? ''
-    const allowed = remote === '::1' || remote === '127.0.0.1' || remote.startsWith('172.17.')
+    const ip = remote.replace(/^::ffff:/, '') // normalise IPv4-mapped IPv6
+    const allowed = ip === '::1' || ip === '127.0.0.1' || ip.startsWith('172.17.')
     if (!allowed) {
       res.writeHead(403)
       res.end('Forbidden')
