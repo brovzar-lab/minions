@@ -42,6 +42,9 @@ export default function App() {
     : null
 
   const isLoading = !isDemoMode && (agentsQuery.isLoading || issuesQuery.isLoading)
+  const apiError = !isDemoMode && !isLoading && agentsQuery.isError
+    ? (agentsQuery.error as Error)?.message ?? 'unknown error'
+    : null
 
   if (isLoading) {
     return (
@@ -71,6 +74,16 @@ export default function App() {
 
   return (
     <div style={{ height: '100vh', overflow: 'hidden' }}>
+      {apiError && (
+        <div style={{
+          position: 'fixed', top: 8, right: 8, zIndex: 9999,
+          background: '#1a0000', border: '1px solid #ff3131',
+          color: '#ff3131', padding: '6px 12px', borderRadius: 4,
+          fontSize: 11, fontFamily: 'monospace',
+        }}>
+          API ERROR: {apiError}
+        </div>
+      )}
       <SpaceStation
         agents={agents}
         activeIssues={activeIssues}

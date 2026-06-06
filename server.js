@@ -90,16 +90,25 @@ function proxyRequest(req, res, targetUrl) {
   req.pipe(proxyReq)
 }
 
-function serveStatic(res, filePath) {
+function serveStatic(res, filePath, isAsset = false) {
   try {
     const content = fs.readFileSync(filePath)
     const ext = path.extname(filePath)
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' })
+    const headers = { 'Content-Type': MIME[ext] || 'application/octet-stream' }
+    // Hashed assets are immutable; HTML must always revalidate to pick up new hashes
+    if (!isAsset) headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    res.writeHead(200, headers)
     res.end(content)
   } catch {
+    if (isAsset) {
+      // Never fall back to index.html for assets — browser would parse HTML as JS
+      res.writeHead(404, { 'Content-Type': 'text/plain' })
+      res.end('Not found')
+      return
+    }
     const fallback = path.join(DIST, 'index.html')
     try {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache, no-store, must-revalidate' })
       res.end(fs.readFileSync(fallback))
     } catch {
       res.writeHead(404)
@@ -155,8 +164,9 @@ const server = http.createServer((req, res) => {
   }
 
   const filePath = path.join(DIST, url.pathname)
+  const isAsset = url.pathname.startsWith('/assets/')
   const exists = fs.existsSync(filePath) && fs.statSync(filePath).isFile()
-  serveStatic(res, exists ? filePath : path.join(DIST, 'index.html'))
+  serveStatic(res, exists ? filePath : path.join(DIST, 'index.html'), isAsset && !exists)
 })
 
 server.listen(PORT, () => {
