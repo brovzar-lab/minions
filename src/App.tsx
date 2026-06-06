@@ -13,18 +13,24 @@ export default function App() {
     queryKey: ['agents'],
     queryFn: fetchAgents,
     enabled: !isDemoMode,
+    refetchInterval: 30000,
+    staleTime: 20000,
   })
 
   const issuesQuery = useQuery({
     queryKey: ['issues-active'],
     queryFn: fetchActiveIssues,
     enabled: !isDemoMode,
+    refetchInterval: 20000,
+    staleTime: 15000,
   })
 
   const doneQuery = useQuery({
     queryKey: ['issues-done'],
     queryFn: fetchRecentDone,
     enabled: !isDemoMode,
+    refetchInterval: 60000,
+    staleTime: 50000,
   })
 
   const agents = isDemoMode ? demoAgents : (agentsQuery.data ?? [])

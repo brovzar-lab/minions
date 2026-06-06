@@ -28,7 +28,7 @@ export interface RoomConfig {
   name: string
   emoji: string
   description: string
-  agentIds: string[]
+  agentUrlKeys: string[]
   color: string
   gridArea: string
 }

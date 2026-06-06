@@ -13,16 +13,18 @@ interface Props {
 export function Room({ room, agents, issues, doneIssues = [] }: Props) {
   const [open, setOpen] = useState(false)
 
-  const roomAgents = agents.filter((a) => room.agentIds.includes(a.id))
-  const roomIssues = issues.filter(
-    (i) => i.assigneeAgentId && room.agentIds.includes(i.assigneeAgentId),
-  )
+  const roomAgents = agents.filter((a) => room.agentUrlKeys.includes(a.urlKey))
+  const roomIssues = issues.filter((i) => {
+    if (!i.assigneeAgentId) return false
+    const assignee = agents.find((a) => a.id === i.assigneeAgentId)
+    return assignee && room.agentUrlKeys.includes(assignee.urlKey)
+  })
   const activeCount = roomIssues.filter((i) => i.status === 'in_progress').length
   const blockedCount = roomIssues.filter((i) => i.status === 'blocked').length
   const runningAgents = roomAgents.filter((a) => a.status === 'running')
 
   // Treasury and Archives/Quarters are data rooms, not agent rooms
-  const isDataRoom = room.agentIds.length === 0
+  const isDataRoom = room.agentUrlKeys.length === 0
 
   const borderColor = blockedCount > 0 ? '#ff3131' : activeCount > 0 ? room.color : '#003309'
   const glowIntensity = activeCount > 0 || runningAgents.length > 0 ? 1 : 0.3

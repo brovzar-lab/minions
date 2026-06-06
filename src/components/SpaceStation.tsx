@@ -14,8 +14,8 @@ interface Props {
 }
 
 function getIdleAgents(agents: Agent[], rooms: typeof ROOMS): Agent[] {
-  const assignedIds = new Set(rooms.flatMap((r) => r.agentIds))
-  return agents.filter((a) => !assignedIds.has(a.id))
+  const assignedUrlKeys = new Set(rooms.flatMap((r) => r.agentUrlKeys))
+  return agents.filter((a) => !assignedUrlKeys.has(a.urlKey))
 }
 
 export function SpaceStation({ agents, activeIssues, doneIssues, isLive, lastRefresh }: Props) {
@@ -122,9 +122,11 @@ export function SpaceStation({ agents, activeIssues, doneIssues, isLive, lastRef
       }}>
         {/* Main rooms */}
         {ROOMS.filter((r) => !['treasury', 'archives', 'quarters'].includes(r.id)).map((room) => {
-          const roomDoneIssues = doneIssues.filter(
-            (i) => i.assigneeAgentId && room.agentIds.includes(i.assigneeAgentId),
-          )
+          const roomDoneIssues = doneIssues.filter((i) => {
+            if (!i.assigneeAgentId) return false
+            const assignee = agents.find((a) => a.id === i.assigneeAgentId)
+            return assignee && room.agentUrlKeys.includes(assignee.urlKey)
+          })
           return (
             <Room
               key={room.id}
