@@ -1,0 +1,49 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      api_key:
+        description: 'Paperclip API key (leave blank to skip key update)'
+        required: false
+        default: ''
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: root
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/minions
+
+            # Pull latest code
+            git pull
+
+            # Install deps and rebuild
+            npm install --silent
+            npm run build:vps
+
+            # Update API key if provided
+            if [ -n "${{ github.event.inputs.api_key }}" ]; then
+              echo "${{ github.event.inputs.api_key }}" > /tmp/.minions-key
+              echo "API key updated"
+            fi
+
+            # Restart server
+            pkill -f 'node server.js' 2>/dev/null || true
+            sleep 1
+            PORT=4001 nohup node server.js > ~/minions/server.log 2>&1 &
+            echo "Restarted MINIONS PID: $!"
+            sleep 2
+            tail -5 ~/minions/server.log
+
+            # Quick health check
+            curl -s http://localhost:4001/ > /dev/null && echo "MINIONS is up"
