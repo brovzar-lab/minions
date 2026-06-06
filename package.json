@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "build:vps": "VITE_PAPERCLIP_COMPANY_ID=da1766d2-228a-4b92-a4d3-b8cb6ec0b439 VITE_PAPERCLIP_PROXY=true npm run build",
     "preview": "vite preview",
-    "serve": "node server.js"
+    "serve": "PORT=4001 node server.js"
   },
   "dependencies": {
     "react": "^18.3.1",
