@@ -23,8 +23,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const PORT = parseInt(process.env.PORT || '4000', 10)
 const PAPERCLIP_URL = (process.env.PAPERCLIP_API_URL || 'http://localhost:3100').replace(/\/$/, '')
-const API_KEY = process.env.PAPERCLIP_API_KEY || ''
 const DIST = path.join(__dirname, 'dist')
+
+// Key management: reads from /tmp/.minions-key file (auto-refreshed by Paperclip routine)
+// Falls back to PAPERCLIP_API_KEY env var if file missing.
+const KEY_FILE = '/tmp/.minions-key'
+let API_KEY = process.env.PAPERCLIP_API_KEY || ''
+
+function loadKey() {
+  try {
+    const fromFile = fs.readFileSync(KEY_FILE, 'utf8').trim()
+    if (fromFile && fromFile !== API_KEY) {
+      API_KEY = fromFile
+      console.log('API key refreshed from', KEY_FILE)
+    }
+  } catch { /* file missing — keep current key */ }
+}
+
+loadKey()
+setInterval(loadKey, 30 * 60 * 1000) // reload every 30 minutes
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
