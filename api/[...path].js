@@ -1,11 +1,11 @@
-const https = require('https')
-const http = require('http')
-const { URL } = require('url')
+import https from 'https'
+import http from 'http'
+import { URL } from 'url'
 
 const TARGET = (process.env.PAPERCLIP_API_URL || 'https://paperclip.billyrovzar.com').replace(/\/$/, '')
 const API_KEY = process.env.PAPERCLIP_API_KEY || ''
 
-module.exports = (req, res) => {
+export default (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
