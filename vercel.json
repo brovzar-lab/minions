@@ -1,0 +1,7 @@
+{
+  "buildCommand": "VITE_PAPERCLIP_COMPANY_ID=da1766d2-228a-4b92-a4d3-b8cb6ec0b439 VITE_PAPERCLIP_PROXY=true npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/[...path]" }
+  ]
+}
